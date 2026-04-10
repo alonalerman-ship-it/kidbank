@@ -1,0 +1,101 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Settings {
+  id                      Int      @id @default(1)
+  childName               String
+  spendPercentage         Int
+  savePercentage          Int
+  investPercentage        Int
+  givePercentage          Int
+  defaultLoanInterestRate Float
+  updatedAt               DateTime @updatedAt
+}
+
+model BucketBalance {
+  id        Int      @id @default(autoincrement())
+  bucket    String   @unique
+  balance   Decimal  @db.Decimal(10, 2)
+  updatedAt DateTime @updatedAt
+}
+
+model Loan {
+  id                 String        @id @default(cuid())
+  borrowerName       String
+  principal          Decimal       @db.Decimal(10, 2)
+  purpose            String
+  annualInterestRate Float
+  borrowedAt         DateTime
+  repaidAt           DateTime?
+  status             String
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+  transactions       Transaction[]
+}
+
+model Chore {
+  id          String            @id @default(cuid())
+  title       String
+  reward      Decimal           @db.Decimal(10, 2)
+  active      Boolean           @default(true)
+  sortOrder   Int
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  completions ChoreCompletion[]
+}
+
+model ChoreCompletion {
+  id                     String       @id @default(cuid())
+  choreId                String
+  completedAt            DateTime
+  approvedAt             DateTime?
+  resultingTransactionId String?      @unique
+  createdAt              DateTime     @default(now())
+  updatedAt              DateTime     @updatedAt
+  chore                  Chore        @relation(fields: [choreId], references: [id])
+  resultingTransaction   Transaction? @relation("ChoreCompletionTransaction", fields: [resultingTransactionId], references: [id])
+}
+
+model Reflection {
+  id            String   @id @default(cuid())
+  transactionId String   @unique
+  monthKey      String
+  verdict       String
+  note          String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Tip {
+  id        String   @id @default(cuid())
+  title     String
+  body      String
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Transaction {
+  id                    String            @id @default(cuid())
+  type                  String
+  description           String
+  amount                Decimal           @db.Decimal(10, 2)
+  bucket                String?
+  occurredAt            DateTime
+  loanId                String?
+  choreId               String?
+  reflectionMonth       String?
+  createdAt             DateTime          @default(now())
+  loan                  Loan?             @relation(fields: [loanId], references: [id])
+  resultingForCompletion ChoreCompletion? @relation("ChoreCompletionTransaction")
+
+  @@index([occurredAt])
+  @@index([type, occurredAt])
+  @@index([bucket, occurredAt])
+}
