@@ -4,7 +4,7 @@ import { getSitePasswordToken } from "@/lib/auth";
 
 const AUTH_COOKIE = "kidbank_site_auth";
 
-export async function middleware(request: NextRequest) {
+export function middleware(request: NextRequest) {
   const sitePassword = process.env.KIDBANK_SITE_PASSWORD;
   if (!sitePassword) {
     return NextResponse.next();
@@ -22,7 +22,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  const expectedToken = await getSitePasswordToken(sitePassword);
+  const expectedToken = getSitePasswordToken(sitePassword);
   if (request.cookies.get(AUTH_COOKIE)?.value === expectedToken) {
     return NextResponse.next();
   }
@@ -36,3 +36,4 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: ["/((?!.*\\..*).*)", "/api/:path*"]
 };
+
