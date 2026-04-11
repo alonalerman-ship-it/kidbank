@@ -4,6 +4,12 @@ const { subDays, subMonths } = require("date-fns");
 const prisma = new PrismaClient();
 
 async function main() {
+  const existingSettings = await prisma.settings.findUnique({ where: { id: 1 } });
+  if (existingSettings) {
+    console.log("Seed skipped: KidBank starter data already exists.");
+    return;
+  }
+
   const now = new Date();
   const lastMonth = subMonths(now, 1);
 
@@ -122,15 +128,6 @@ async function main() {
   };
 
   await prisma.$transaction(async (tx) => {
-    await tx.choreCompletion.deleteMany();
-    await tx.reflection.deleteMany();
-    await tx.transaction.deleteMany();
-    await tx.loan.deleteMany();
-    await tx.chore.deleteMany();
-    await tx.tip.deleteMany();
-    await tx.bucketBalance.deleteMany();
-    await tx.settings.deleteMany();
-
     await tx.settings.create({
       data: {
         id: 1,
