@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
   }
 
   const response = NextResponse.redirect(new URL(nextPath, request.url));
-  response.cookies.set(AUTH_COOKIE, getSitePasswordToken(sitePassword), {
+  response.cookies.set(AUTH_COOKIE, await getSitePasswordToken(sitePassword), {
     httpOnly: true,
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",
@@ -38,4 +38,3 @@ export async function POST(request: NextRequest) {
   });
   return response;
 }
-
