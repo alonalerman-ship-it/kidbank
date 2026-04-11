@@ -1,6 +1,8 @@
-import { createHash } from "crypto";
+const encoder = new TextEncoder();
 
-export function getSitePasswordToken(password: string) {
-  return createHash("sha256").update(`kidbank:${password}`).digest("hex");
+export async function getSitePasswordToken(password: string) {
+  const digest = await crypto.subtle.digest("SHA-256", encoder.encode(`kidbank:${password}`));
+  return Array.from(new Uint8Array(digest))
+    .map((byte) => byte.toString(16).padStart(2, "0"))
+    .join("");
 }
-
