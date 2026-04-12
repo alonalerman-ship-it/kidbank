@@ -38,7 +38,6 @@ Set these environment variables in Hostinger:
 
 - `DATABASE_URL`
 - `SHORTCUT_SECRET`
-- `KIDBANK_SITE_PASSWORD`
 - `NEXT_PUBLIC_APP_NAME`
 
 Recommended release flow:
