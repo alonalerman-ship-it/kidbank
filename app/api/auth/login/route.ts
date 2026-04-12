@@ -9,10 +9,23 @@ function getSafeRedirect(value: FormDataEntryValue | null) {
   return value;
 }
 
+// Behind Hostinger's reverse proxy, request.url shows the internal address
+// (e.g. http://0.0.0.0:3000). Use forwarded headers to get the real public URL.
+function getBaseUrl(request: NextRequest): string {
+  const forwardedHost = request.headers.get("x-forwarded-host");
+  const forwardedProto = request.headers.get("x-forwarded-proto") ?? "https";
+  if (forwardedHost) {
+    return `${forwardedProto}://${forwardedHost}`;
+  }
+  return new URL(request.url).origin;
+}
+
 export async function POST(request: NextRequest) {
   const sitePassword = process.env.KIDBANK_SITE_PASSWORD;
+  const base = getBaseUrl(request);
+
   if (!sitePassword) {
-    return NextResponse.redirect(new URL("/", request.url));
+    return NextResponse.redirect(new URL("/", base));
   }
 
   const formData = await request.formData();
@@ -20,13 +33,13 @@ export async function POST(request: NextRequest) {
   const nextPath = getSafeRedirect(formData.get("next"));
 
   if (password !== sitePassword) {
-    const loginUrl = new URL("/login", request.url);
+    const loginUrl = new URL("/login", base);
     loginUrl.searchParams.set("error", "1");
     loginUrl.searchParams.set("next", nextPath);
     return NextResponse.redirect(loginUrl);
   }
 
-  const response = NextResponse.redirect(new URL(nextPath, request.url));
+  const response = NextResponse.redirect(new URL(nextPath, base));
   response.cookies.set(AUTH_COOKIE, sitePassword, {
     httpOnly: true,
     sameSite: "lax",
