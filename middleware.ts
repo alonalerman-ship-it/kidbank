@@ -15,7 +15,7 @@ export function middleware(request: NextRequest) {
   // Always allow login page and auth API routes
   if (
     pathname === "/login" ||
-    pathname.startsWith("/api/auth/") ||
+    pathname.startsWith("/api/") ||
     pathname.startsWith("/_next/")
   ) {
     return NextResponse.next();
